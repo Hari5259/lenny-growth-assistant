@@ -1,0 +1,1 @@
+Place raw exported coding-agent transcripts here (for example, the claude.ai share link exported as Markdown or PDF, Claude Code `/export` output, or Cursor chat exports). Remove API keys, tokens and personal data before committing.
