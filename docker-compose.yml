@@ -1,0 +1,73 @@
+# One command:  docker compose up --build
+#   db      Postgres 16 + pgvector (conversations + knowledge base)
+#   ingest  one-shot: clones Lenny's transcripts, chunks, embeds via Ollama, exits
+#   api     FastAPI + Claude Agent SDK  -> http://localhost:8000/docs
+#   web     React UI (nginx, proxies /api) -> http://localhost:3000
+#
+# Ollama runs on the HOST (so it can use your GPU on Windows/macOS). The containers reach it
+# at host.docker.internal:11434. On Linux without a host Ollama, use:  --profile ollama
+
+name: lenny-growth-assistant
+
+x-backend-env: &backend-env
+  DATABASE_URL: postgresql://lenny:lenny@db:5432/lenny
+  OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+  TRANSCRIPTS_DIR: /app/data/lennys-podcast-transcripts
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: lenny
+      POSTGRES_PASSWORD: lenny
+      POSTGRES_DB: lenny
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lenny -d lenny"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  ingest:
+    build: ./backend
+    command: ["python", "-m", "app.ingest"]
+    env_file:
+      - path: .env
+        required: false
+    environment: *backend-env
+    volumes: [transcripts:/app/data]
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    depends_on:
+      db: { condition: service_healthy }
+    restart: "no"
+
+  api:
+    build: ./backend
+    env_file:
+      - path: .env
+        required: false
+    environment: *backend-env
+    ports: ["8000:8000"]
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    depends_on:
+      db: { condition: service_healthy }
+    restart: unless-stopped
+
+  web:
+    build: ./frontend
+    ports: ["3000:80"]
+    depends_on: [api]
+    restart: unless-stopped
+
+  # Optional: Ollama in a container (Linux / no host install). CPU-only unless you add GPU config.
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ["ollama"]
+    ports: ["11434:11434"]
+    volumes: [ollama:/root/.ollama]
+
+volumes:
+  pgdata:
+  transcripts:
+  ollama:
