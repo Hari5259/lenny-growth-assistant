@@ -1,0 +1,16 @@
+[project]
+name = "lenny-growth-assistant"
+version = "1.0.0"
+description = "Grounded AI assistant over Lenny's Podcast transcripts"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+markers = ["integration: needs Postgres with pgvector (TEST_DATABASE_URL)"]
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
