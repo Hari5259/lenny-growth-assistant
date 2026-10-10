@@ -37,7 +37,8 @@ function toUi(m: Message, artifacts: Artifact[]): UiMessage {
     id: m.id, role: m.role, content: m.content, route: m.route, provider: m.provider, model: m.model,
     sources: m.sources ?? [], notices: m.meta?.notices ?? [], artifactId: m.artifact_id, artifactTitle: art?.title,
     error: m.meta?.error ? { code: m.meta.error.code, message: m.meta.error.message } : null,
-    latencyMs: m.meta?.latency_ms ?? null, cited: m.meta?.cited,
+    latencyMs: m.meta?.latency_ms ?? null, firstTokenMs: m.meta?.timings?.first_token_ms ?? null,
+    cited: m.meta?.cited,
   };
 }
 
@@ -169,7 +170,7 @@ export default function App() {
         } else if (ev.type === "done") {
           const msg = ev.message;
           patch((m) => ({ ...m, id: msg.id, content: msg.content, sources: msg.sources, streaming: false,
-            latencyMs: msg.meta?.latency_ms, notices: msg.meta?.notices ?? m.notices, route: msg.route ?? m.route }));
+            latencyMs: msg.meta?.latency_ms, firstTokenMs: msg.meta?.timings?.first_token_ms ?? null, notices: msg.meta?.notices ?? m.notices, route: msg.route ?? m.route }));
           setBuilding(null);
         } else if (ev.type === "error") {
           patch((m) => ({ ...m, streaming: false, error: ev.error }));

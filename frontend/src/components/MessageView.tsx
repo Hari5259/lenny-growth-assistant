@@ -16,6 +16,7 @@ export interface UiMessage {
   streaming?: boolean;
   error?: ApiErrorBody | null;
   latencyMs?: number | null;
+  firstTokenMs?: number | null;
   cited?: boolean;
 }
 
@@ -54,7 +55,14 @@ export function MessageView({ m, onOpenArtifact, onRetry }: {
         <div className="msg-meta">
           <span className={`route route-${m.route}`}>{ROUTE_LABEL[m.route] ?? m.route}</span>
           {m.provider && <span className={`prov ${m.provider === "ollama" ? "prov-local" : "prov-cloud"}`}>{m.provider === "ollama" ? "Local" : "Cloud"} {m.model}</span>}
-          {m.latencyMs != null && <span className="latency">{(m.latencyMs / 1000).toFixed(1)}s</span>}
+          {m.latencyMs != null && (
+            <span className="latency" title="Total time for this answer">{(m.latencyMs / 1000).toFixed(1)}s total</span>
+          )}
+          {m.firstTokenMs != null && (
+            <span className="latency" title="Time until the model wrote its first word">
+              first word {(m.firstTokenMs / 1000).toFixed(1)}s
+            </span>
+          )}
         </div>
       )}
 
