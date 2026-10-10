@@ -37,6 +37,7 @@ export function MessageView({ m, onOpenArtifact, onRetry }: {
 }) {
   const [openSources, setOpenSources] = useState(false);
   const [focused, setFocused] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   if (m.role === "user") {
     return <div className="msg msg-user"><p>{m.content}</p></div>;
@@ -89,6 +90,18 @@ export function MessageView({ m, onOpenArtifact, onRetry }: {
           <span className="artifact-card-title">{m.artifactTitle ?? "Artifact"}</span>
           <span className="artifact-card-cta">Open in viewer</span>
         </button>
+      )}
+
+      {!m.streaming && !m.error && m.content && (
+        <div className="msg-actions">
+          <button className="text-btn" onClick={async () => {
+            try {
+              await navigator.clipboard.writeText(m.content);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 1500);
+            } catch { /* clipboard blocked: nothing to do */ }
+          }}>{copied ? "Copied" : "Copy answer"}</button>
+        </div>
       )}
 
       {m.sources.length > 0 && !m.streaming && (

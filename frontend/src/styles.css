@@ -249,3 +249,4 @@ button { cursor: pointer; }
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
 .msg-assistant.msg-error { border: 0; padding: 0; background: none; }
+.msg-actions { margin-top: 12px; display: flex; gap: 8px; }
