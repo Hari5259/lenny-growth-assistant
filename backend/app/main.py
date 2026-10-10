@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import time
 import uuid
 from contextlib import asynccontextmanager
@@ -39,7 +40,14 @@ def create_app(settings: Settings | None = None, container: Container | None = N
         log.info("app.started", extra={"provider": settings.llm_provider, "engine": settings.agent_engine,
                                        "ollama_model": settings.ollama_model,
                                        "anthropic_configured": settings.anthropic_configured})
+        warmup = None
+        if settings.ollama_warmup and settings.llm_provider == "ollama":
+            from app.llm.clients import warm_up_ollama
+
+            warmup = asyncio.create_task(warm_up_ollama(settings))  # runs in the background
         yield
+        if warmup and not warmup.done():
+            warmup.cancel()
         await ct.db.close()
 
     app = FastAPI(title="Lenny Growth Assistant API", version="1.0.0", lifespan=lifespan,

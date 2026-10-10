@@ -84,3 +84,31 @@ async def stream_anthropic(settings: Settings, spec: ProviderSpec, system: str, 
     except httpx.ConnectError as exc:
         raise ProviderUnavailableError("Cannot reach api.anthropic.com",
                                        hint="Check network access or switch to Ollama.") from exc
+
+
+async def warm_up_ollama(settings: Settings) -> dict:
+    """Load the chat and embedding models into memory before the first user question.
+    An empty prompt makes Ollama load the model without generating anything."""
+    import time
+
+    from app.logging_setup import get_logger
+
+    log = get_logger(__name__)
+    result: dict = {}
+    async with httpx.AsyncClient(base_url=settings.ollama_base_url, timeout=300) as client:
+        for kind, path, payload in (
+            ("chat", "/api/generate", {"model": settings.ollama_model, "prompt": "",
+                                       "keep_alive": settings.ollama_keep_alive}),
+            ("embed", "/api/embed", {"model": settings.embed_model, "input": "warm up",
+                                     "keep_alive": settings.ollama_keep_alive}),
+        ):
+            started = time.perf_counter()
+            try:
+                resp = await client.post(path, json=payload)
+                ok = resp.status_code == 200
+            except httpx.HTTPError as exc:
+                ok = False
+                log.warning("llm.warmup_failed", extra={"model_kind": kind, "error": str(exc)[:200]})
+            result[kind] = {"ok": ok, "ms": int((time.perf_counter() - started) * 1000)}
+    log.info("llm.warmup_done", extra=result)
+    return result

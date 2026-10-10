@@ -58,7 +58,7 @@ def make_settings(**overrides) -> Settings:
         database_url=TEST_DB, transcripts_dir=str(FIXTURES), llm_provider="ollama",
         llm_fallback_provider="none", agent_engine="direct", agent_engine_fallback=False,
         retrieval_min_vector_score=0.2, retrieval_top_k=4, embed_dim=768, history_turns=6,
-        anthropic_api_key="", log_level="WARNING",
+        anthropic_api_key="", log_level="WARNING", ollama_warmup=False,
     )
     base.update(overrides)
     return Settings(_env_file=None, **base)
