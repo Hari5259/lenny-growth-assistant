@@ -128,6 +128,7 @@ class ConfigResponse(BaseModel):
 
 class SearchHitOut(BaseModel):
     id: str
+    episode_slug: str
     episode_title: str
     guest: str | None
     start_ts: str | None
