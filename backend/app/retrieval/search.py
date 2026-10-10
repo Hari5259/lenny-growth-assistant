@@ -109,7 +109,11 @@ def grounding_verdict(top_vector: float | None, n_keyword: int, n_hits: int, min
         return "strong" if n_keyword >= 3 else "weak"
     if top_vector >= min_score + 0.1:
         return "strong"
-    if top_vector >= min_score or n_keyword >= 3:
+    if top_vector >= min_score:
+        return "weak"
+    # Keyword hits only rescue a borderline semantic match. Common words ("point", "team")
+    # appear in hundreds of transcripts, so on their own they are not evidence.
+    if top_vector >= min_score - 0.05 and n_keyword >= 3:
         return "weak"
     return "none"
 
