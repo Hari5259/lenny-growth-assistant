@@ -20,7 +20,8 @@ from uuid import UUID
 from app.agent.artifacts import extract_artifact
 from app.agent.engines import (DirectEngine, Engine, GenerationRequest, build_engine,
                                stream_with_timeout)
-from app.agent.prompts import (NO_ANSWER_TEXT, build_messages, build_system, citation_check,
+from app.agent.prompts import (NO_ANSWER_TEXT, append_sources_section, build_messages, build_system,
+                               citation_check,
                                format_source, retrieval_query, strip_invalid_citations)
 from app.agent.router import route_message
 from app.agent.skills import SkillRegistry
@@ -151,6 +152,9 @@ class Orchestrator:
                 artifact = None
             stored_text = strip_invalid_citations(chat_text if artifact else full, len(all_sources))
             cite = citation_check((artifact.content if artifact else "") + "\n" + stored_text, len(all_sources))
+            if artifact and artifact.kind == "markdown" and not cite["cited"] and all_sources:
+                artifact.content = append_sources_section(artifact.content, all_sources)
+                notices.append("The model did not cite inline; the source excerpts are listed at the end.")
             meta.update({
                 **cite, "engine": engine_used, "notices": notices, "tool_calls": req.tool_calls,
                 "latency_ms": int((time.perf_counter() - started) * 1000),

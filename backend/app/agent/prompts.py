@@ -83,6 +83,22 @@ def strip_invalid_citations(text: str, n_sources: int) -> str:
     return CITE_RE.sub(lambda m: m.group(0) if 1 <= int(m.group(1)) <= n_sources else "", text)
 
 
+def append_sources_section(content: str, sources: list[dict]) -> str:
+    """Safety net for small models that ignore inline-citation instructions: list the
+    excerpts the document was generated from, so every artifact stays traceable.
+    The message is still recorded as `cited: false` (honest metric)."""
+    if not sources:
+        return content
+    lines = ["", "", "## Sources", "",
+             "_The model did not cite inline. These are the transcript excerpts it was given:_", ""]
+    for s in sources:
+        who = s.get("guest") or ", ".join(s.get("speakers") or []) or "Unknown"
+        ts = s.get("start_ts") or ""
+        link = f" ([{ts}]({s['deep_link']}))" if s.get("deep_link") and ts else ""
+        lines.append(f"- **{s['id']}** {who}: {s.get('episode_title', '')}{link}")
+    return content.rstrip() + "\n".join(lines) + "\n"
+
+
 NO_ANSWER_TEXT = (
     "The transcripts I have don't cover this directly, so I won't guess.\n\n"
     "Try asking about a product or growth topic Lenny's guests discuss, for example:\n"

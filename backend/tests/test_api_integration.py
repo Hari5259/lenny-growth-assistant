@@ -167,3 +167,15 @@ def test_search_endpoint_for_debugging(app_factory):
     client, _ = app_factory()
     r = client.get("/api/search", params={"q": "hire first product manager"})
     assert r.status_code == 200 and r.json()["hits"][0]["episode_title"].startswith("Hiring")
+
+
+def test_uncited_essay_gets_sources_section(app_factory):
+    essay = '<artifact type="markdown" title="Retention">\n# Retention\nKeep users around by surveying them.\n</artifact>'
+    client, _ = app_factory(engine=FakeEngine(reply=essay))
+    sid = new_session(client)
+    body = client.post(f"/api/sessions/{sid}/messages",
+                       json={"content": "Write an essay on product-market fit surveys", "mode": "essay"}).json()
+    art = body["artifact"]["content"]
+    assert "## Sources" in art and "**S1**" in art and "FIXTURE001" in art
+    assert body["message"]["meta"]["cited"] is False
+    assert any("did not cite inline" in n for n in body["message"]["meta"]["notices"])
