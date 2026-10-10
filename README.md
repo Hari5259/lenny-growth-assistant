@@ -146,7 +146,7 @@ createdb -h localhost -U lenny lenny_test   # password: lenny
 pytest -v
 ```
 
-81 tests cover chunking, routing, the HTML sanitizer, prompts and citations, grounding rules, provider fallback, model warm-up, hybrid retrieval, persistence, the HTTP API (validation, structured errors, SSE, session isolation, artifacts, engine fallback, timings), the eval runner and readiness. Tests use a scripted fake LLM and a deterministic hashing embedder, so they need no Ollama or API key. CI runs them on every push (`.github/workflows/ci.yml`). UI checks are in the [manual test plan](docs/manual-test-plan.md).
+89 tests cover chunking, routing, the HTML sanitizer, prompts and citations, grounding rules, provider fallback, model warm-up, hybrid retrieval, persistence, the HTTP API (validation, structured errors, SSE, session isolation, artifacts, engine fallback, timings), the eval runner and readiness. Tests use a scripted fake LLM and a deterministic hashing embedder, so they need no Ollama or API key. CI runs them on every push (`.github/workflows/ci.yml`). UI checks are in the [manual test plan](docs/manual-test-plan.md).
 
 ## Measuring quality (eval)
 

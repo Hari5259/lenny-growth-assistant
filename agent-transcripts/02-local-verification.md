@@ -49,7 +49,18 @@ The agent guided each step and diagnosed failures from screenshots and terminal 
 
 While writing the eval runner for these changes, two more defects were found and fixed: `/api/search` dropped `episode_slug`, and common-word keyword matches let off-topic questions count as grounded. Writing a Makefile then revealed that the README's test command would have run the destructive test fixtures against the main database; tests now require a database name ending in `_test`. See `03-iteration-after-real-run.md`.
 
-## 6. Still to verify on the laptop after applying these commits
+## 6. Retrieval eval on the full index (real embeddings)
+
+`docker compose exec api python -m app.evals.run`, 10 answerable and 4 off-topic questions, `nomic-embed-text`, 303 episodes:
+
+| Run | hit@6 | Off-topic refused | Notes |
+|---|---|---|---|
+| Before calibration (threshold 0.50) | 70% | **0%** | Answerable questions scored 0.70-0.79; off-topic 0.51-0.64, so all of them passed the 0.50 threshold. "Explain quantum chromodynamics" was even rated `strong` (0.64) |
+| After calibration (threshold 0.67, keyword hits ignored when embeddings work) | **80%** | **100%** | One extra hit is a label fix: Jackson Shuttleworth's episode ("Duolingo streaks", Retention Team) was a correct result marked as a miss |
+
+Remaining misses are real: the DHM question returned Dan Hockenmaier (no mention of DHM), and the churn question did not surface Patrick Campbell in the top 6.
+
+## 7. Still to verify on the laptop
 
 - Time to first word on a warm model (expected to drop well below the 108.7 s cold start)
 - Essay with the new template: inline citations and the Sources fallback

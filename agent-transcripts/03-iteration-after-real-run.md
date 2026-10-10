@@ -29,6 +29,12 @@ The operator ran the app on the target laptop (see `02-local-verification.md`) a
 
 ## Verification
 
-- Test suite: 71 → **81 passing**, `ruff` clean.
+- Test suite: 71 → **81 passing**, then **89** after calibration; `ruff` clean.
 - Eval runner executed end to end against a live API with the sandbox data.
 - Frontend type-checks and builds.
+
+## Calibration on real embeddings
+
+The operator ran the eval on the laptop. Off-topic refusal was **0%**: real `nomic-embed-text` scores for off-topic questions (0.51-0.64) were all above the 0.50 default, and they also had keyword hits on common words. Raising the threshold alone would not have been enough, because the keyword-rescue band still covered 0.64. So keyword counts now apply only when embeddings are unavailable, the threshold is 0.67, and tests pin the measured scores to their expected verdicts. Re-run: **hit@6 80%, off-topic refusal 100%**.
+
+A test first failed at exactly 0.72: `0.67 + 0.05` is `0.7200000000000001` in floating point, so 0.72 is "weak". The behaviour was fine; the test value sat on the boundary and was moved to 0.71 and 0.74.

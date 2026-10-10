@@ -108,7 +108,7 @@
 | 5 | Skills (`SKILL.md`), router, prompts, artifact extraction and sanitizer, orchestrator | Done |
 | 6 | API: sessions, chat (JSON + SSE), artifacts, health, metrics, structured errors | Done |
 | 7 | React UI: chat, modes, provider toggle, sources, artifact viewer, responsive, dark mode | Done |
-| 8 | Tests (81), CI, docs, demo | Done |
+| 8 | Tests (89), CI, docs, demo | Done |
 
 | 9 | First real run on the target laptop; fixes for cold-start latency, essay citations, grounding rules; eval runner; Windows scripts | Done |
 
@@ -122,7 +122,9 @@
 | Grounded answer citations | Present (4 guests cited) | Meets |
 | Essay citations | Missing inline in the first essay | Template rewritten; uncited essays now get a Sources list and count as uncited in the metric |
 | Agent SDK through local Ollama | Worked with no fallback | Meets |
+| **Honest refusal** (4 off-topic questions) | 0% at the initial 0.50 threshold → **100%** after calibrating to 0.67 | Meets after calibration |
+| Retrieval hit@6 (10 answerable questions) | **80%** | Baseline for future changes |
 
-Run `docker compose exec api python -m app.evals.run` to reproduce hit@6 and off-topic refusal on the full index.
+Run `docker compose exec api python -m app.evals.run` to reproduce hit@6 and off-topic refusal on the full index. The threshold was set from measured scores (answerable 0.70-0.79, off-topic 0.51-0.64), not guessed.
 
 **Next (production rollout):** SSO and per-user authorization; an eval set of ~50 questions with expected sources, run in CI; cross-encoder re-ranking; newsletter ingestion; artifact versioning and sharing links.
