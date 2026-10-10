@@ -144,5 +144,6 @@ class SearchResponse(BaseModel):
     query: str
     mode: str
     grounding: str
+    top_vector_score: float | None = None
     latency_ms: int
     hits: list[SearchHitOut]

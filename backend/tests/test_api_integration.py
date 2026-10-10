@@ -167,6 +167,9 @@ def test_search_endpoint_for_debugging(app_factory):
     client, _ = app_factory()
     r = client.get("/api/search", params={"q": "hire first product manager"})
     assert r.status_code == 200 and r.json()["hits"][0]["episode_title"].startswith("Hiring")
+    assert r.json()["hits"][0]["episode_slug"] == "cy-hiring"
+    off = client.get("/api/search", params={"q": "quantum chromodynamics gluon"}).json()
+    assert off["grounding"] == "none" and off["hits"] == [] and off["top_vector_score"] is not None
 
 
 def test_uncited_essay_gets_sources_section(app_factory):

@@ -172,5 +172,6 @@ async def search(request: Request, q: str = Query(min_length=2, max_length=500),
                  k: int = Query(6, ge=1, le=20)) -> dict:
     res = await c(request).retriever.search(q, top_k=k)
     return {"query": q, "mode": res.mode, "grounding": res.grounding, "latency_ms": res.latency_ms,
+            "top_vector_score": res.top_vector_score,
             "hits": [hit_to_source(i, h) for i, h in enumerate(res.hits, 1)]}
 
