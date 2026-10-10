@@ -142,9 +142,14 @@ class Orchestrator:
             )
             parts: list[str] = []
             engine_used = self.engine.name
+            gen_started = time.perf_counter()
+            first_token_ms: int | None = None
             async for engine_used, piece in self._generate(req, notices):
+                if first_token_ms is None:
+                    first_token_ms = int((time.perf_counter() - gen_started) * 1000)
                 parts.append(piece)
                 yield {"type": "delta", "text": piece}
+            generation_ms = int((time.perf_counter() - gen_started) * 1000)
             full = "".join(parts).strip()
             if not full:
                 raise ProviderResponseError("The model returned an empty response")
@@ -163,6 +168,9 @@ class Orchestrator:
                 **cite, "engine": engine_used, "notices": notices, "tool_calls": req.tool_calls,
                 "latency_ms": int((time.perf_counter() - started) * 1000),
                 "output_chars": len(full),
+                # where the time went: retrieval vs model start-up vs writing
+                "timings": {"retrieval_ms": retrieval.latency_ms, "first_token_ms": first_token_ms,
+                            "generation_ms": generation_ms},
             })
             if not stored_text and artifact:
                 stored_text = f"Created **{artifact.title}** — open it in the Artifact Viewer."
