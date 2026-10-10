@@ -62,13 +62,14 @@ def test_keyword_query_drops_stopwords():
 
 
 @pytest.mark.parametrize("top,kw,n,expected", [
-    (0.8, 0, 5, "strong"), (0.55, 0, 5, "weak"), (0.3, 0, 5, "none"),
-    (0.47, 5, 5, "weak"),  # borderline semantic match with keyword support
-    (0.3, 5, 5, "none"),  # common-word keyword hits alone are not evidence
+    (0.8, 0, 5, "strong"), (0.52, 0, 5, "weak"), (0.3, 0, 5, "none"),
+    (0.47, 5, 5, "none"),  # keyword hits never rescue a below-threshold semantic score
+    (0.3, 5, 5, "none"),
     (None, 4, 4, "strong"), (None, 1, 1, "weak"), (None, 0, 0, "none"),
 ])
 def test_grounding_verdict(top, kw, n, expected):
     assert grounding_verdict(top, kw, n, 0.5) == expected
+
 
 
 # ---------- providers ----------

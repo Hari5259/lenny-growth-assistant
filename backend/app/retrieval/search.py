@@ -107,13 +107,13 @@ def grounding_verdict(top_vector: float | None, n_keyword: int, n_hits: int, min
         return "none"
     if top_vector is None:  # keyword-only mode
         return "strong" if n_keyword >= 3 else "weak"
-    if top_vector >= min_score + 0.1:
+    # With embeddings available, the semantic score alone decides. Measured with
+    # nomic-embed-text on the full index: answerable questions scored 0.70-0.79 and
+    # off-topic ones 0.51-0.64, and every off-topic question still had 3+ keyword hits
+    # on common words ("explain", "point"), so keyword counts are not evidence here.
+    if top_vector >= min_score + 0.05:
         return "strong"
     if top_vector >= min_score:
-        return "weak"
-    # Keyword hits only rescue a borderline semantic match. Common words ("point", "team")
-    # appear in hundreds of transcripts, so on their own they are not evidence.
-    if top_vector >= min_score - 0.05 and n_keyword >= 3:
         return "weak"
     return "none"
 
