@@ -108,6 +108,21 @@
 | 5 | Skills (`SKILL.md`), router, prompts, artifact extraction and sanitizer, orchestrator | Done |
 | 6 | API: sessions, chat (JSON + SSE), artifacts, health, metrics, structured errors | Done |
 | 7 | React UI: chat, modes, provider toggle, sources, artifact viewer, responsive, dark mode | Done |
-| 8 | Tests (70), CI, docs, demo | Done |
+| 8 | Tests (81), CI, docs, demo | Done |
+
+| 9 | First real run on the target laptop; fixes for cold-start latency, essay citations, grounding rules; eval runner; Windows scripts | Done |
+
+### Measured on the target laptop (RTX 3050, `qwen2.5:3b`)
+
+| Measure | Result | Status vs target |
+|---|---|---|
+| Install to first answer | Blocked first by WSL and a full C: drive; both now handled by `scripts/preflight.ps1` and the README | Fixed in docs and scripts |
+| Indexing | 303 episodes in about 13 minutes | OK |
+| First answer, cold model | 108.7 s (model loading while ingestion shared the GPU) | Misses the p50 < 5 s first-token target cold; warm-up and keep-alive added, warm figure to be re-measured |
+| Grounded answer citations | Present (4 guests cited) | Meets |
+| Essay citations | Missing inline in the first essay | Template rewritten; uncited essays now get a Sources list and count as uncited in the metric |
+| Agent SDK through local Ollama | Worked with no fallback | Meets |
+
+Run `docker compose exec api python -m app.evals.run` to reproduce hit@6 and off-topic refusal on the full index.
 
 **Next (production rollout):** SSO and per-user authorization; an eval set of ~50 questions with expected sources, run in CI; cross-encoder re-ranking; newsletter ingestion; artifact versioning and sharing links.
