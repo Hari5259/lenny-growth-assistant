@@ -55,6 +55,7 @@ class Settings(BaseSettings):
     embed_dim: int = 768
     embed_batch_size: int = 32
     retrieval_top_k: int = 6
+    retrieval_top_k_local: int = 4  # fewer excerpts for small local models: shorter prompt, faster answer
     retrieval_candidates: int = 24
     retrieval_max_per_episode: int = 2
     retrieval_min_vector_score: float = 0.50

@@ -103,7 +103,11 @@ class Orchestrator:
         meta: dict = {"route_reason": decision.reason, "mode": mode}
 
         try:
-            retrieval = await self.retriever.search(retrieval_query(user_text, history, decision.route))
+            requested = provider or session["provider"]
+            top_k = (self.settings.retrieval_top_k_local if requested == "ollama"
+                     else self.settings.retrieval_top_k)
+            retrieval = await self.retriever.search(retrieval_query(user_text, history, decision.route),
+                                                    top_k=top_k)
             if retrieval.mode == "keyword":
                 notices.append("Semantic search unavailable; using keyword search only.")
             sources = [hit_to_source(i, h) for i, h in enumerate(retrieval.hits, 1)]
