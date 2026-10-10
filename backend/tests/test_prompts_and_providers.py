@@ -71,6 +71,16 @@ def test_grounding_verdict(top, kw, n, expected):
     assert grounding_verdict(top, kw, n, 0.5) == expected
 
 
+@pytest.mark.parametrize("score,expected", [
+    # real scores measured on the target laptop (nomic-embed-text, 303 episodes)
+    (0.51, "none"), (0.57, "none"), (0.59, "none"), (0.64, "none"),  # off-topic questions
+    (0.70, "weak"), (0.71, "weak"), (0.74, "strong"), (0.79, "strong"),  # answerable questions
+])
+def test_grounding_verdict_with_calibrated_default(score, expected):
+    from app.config import Settings
+    default = Settings.model_fields["retrieval_min_vector_score"].default
+    assert grounding_verdict(score, 6, 6, default) == expected
+
 
 # ---------- providers ----------
 def _registry(handler, **kw):

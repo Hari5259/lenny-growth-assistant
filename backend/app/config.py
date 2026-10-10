@@ -58,7 +58,9 @@ class Settings(BaseSettings):
     retrieval_top_k_local: int = 4  # fewer excerpts for small local models: shorter prompt, faster answer
     retrieval_candidates: int = 24
     retrieval_max_per_episode: int = 2
-    retrieval_min_vector_score: float = 0.50
+    # Calibrated on the target laptop with nomic-embed-text: answerable 0.70-0.79, off-topic 0.51-0.64.
+    # Re-check with `python -m app.evals.run` after changing EMBED_MODEL.
+    retrieval_min_vector_score: float = 0.67
     history_turns: int = 6
 
     # --- Ingestion ---
