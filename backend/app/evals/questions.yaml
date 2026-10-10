@@ -1,0 +1,35 @@
+# Evaluation set for the Lenny Growth Assistant.
+#
+# answerable: the transcripts cover this; `expect` lists episode folder names (prefix match)
+#             that a good retrieval should return in its top results.
+# off_topic:  the transcripts do not cover this; the assistant must say so without calling the model.
+#
+# Every expected episode was checked by searching the transcript files for the key term.
+
+answerable:
+  - q: How do you measure product-market fit with a survey?
+    expect: [sean-ellis, rahul-vohra]
+  - q: How should I position my product against competitors?
+    expect: [april-dunford]
+  - q: What is the LNO framework for prioritising work?
+    expect: [shreyas-doshi]
+  - q: How do you price a new product before you build it?
+    expect: [madhavan-ramanujam]
+  - q: How does the DHM model help with product strategy?
+    expect: [gibson-biddle]
+  - q: What are the 7 Powers in business strategy?
+    expect: [hamilton-helmer]
+  - q: How do you give radically candid feedback to your team?
+    expect: [kim-scott]
+  - q: How did Duolingo think about retention and engagement?
+    expect: [albert-cheng]
+  - q: How do subscription businesses reduce churn?
+    expect: [patrick-campbell]
+  - q: How do you make good decisions under uncertainty?
+    expect: [annie-duke]
+
+off_topic:
+  - What is the boiling point of tungsten?
+  - Explain quantum chromodynamics and gluons.
+  - How do I replace the brake pads on a car?
+  - What is the capital of Mongolia?
