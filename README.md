@@ -64,7 +64,18 @@ docker compose up --build
 
 Open **http://localhost:3000**.
 
-On first start the `ingest` container clones the transcripts repo and indexes every episode. Progress shows in `docker compose logs -f ingest`, and the sidebar shows "N episodes indexed". You can chat while it runs. Indexing about 300 episodes takes roughly 3–10 minutes depending on GPU. For a faster first run, set `INGEST_LIMIT=40` in `.env`.
+On first start the `ingest` container clones the transcripts repo and indexes every episode. Progress shows in `docker compose logs -f ingest`, and the sidebar shows "N episodes indexed". You can chat while it runs. On the reference laptop (RTX 3050), all 303 episodes indexed in about 13 minutes. For a faster first run, set `INGEST_LIMIT=40` in `.env`.
+
+**Windows:** run `powershell -ExecutionPolicy Bypass -File scripts\preflight.ps1` first. It checks Docker, Ollama, both models, free space on C: and creates `.env`. Once the app is up, `scripts\status.ps1` shows readiness and metrics.
+
+### Windows notes (from the first install on the reference laptop)
+
+| Problem we hit | Fix |
+|---|---|
+| Docker Desktop: "WSL not installed" | Run `wsl --install` in an **administrator** PowerShell, create the Ubuntu user when asked, restart |
+| `ollama pull` fails: "There is not enough space on the disk" | Keep models on another drive. Stop Ollama, then make the models folder a link to that drive: `cmd /c mklink /J "%USERPROFILE%\.ollama\models" "E:\ollama-models"`. `setx OLLAMA_MODELS` alone did not take effect until a full sign-out |
+| C: drive full during `docker compose up` | Docker Desktop → Settings → Resources → Advanced → **Disk image location** → a folder on another drive → Apply & restart |
+| `docker` not recognised right after installing | Restart the laptop once and open Docker Desktop before using the command |
 
 | URL | What |
 |---|---|
@@ -135,7 +146,18 @@ createdb -h localhost -U lenny lenny_test   # password: lenny
 pytest -v
 ```
 
-70 tests cover chunking, routing, the HTML sanitizer, prompts and citations, provider fallback, hybrid retrieval, persistence, the HTTP API (validation, structured errors, SSE, session isolation, artifacts, engine fallback) and readiness. Tests use a scripted fake LLM and a deterministic hashing embedder, so they need no Ollama or API key. CI runs them on every push (`.github/workflows/ci.yml`). UI checks are in the [manual test plan](docs/manual-test-plan.md).
+81 tests cover chunking, routing, the HTML sanitizer, prompts and citations, grounding rules, provider fallback, model warm-up, hybrid retrieval, persistence, the HTTP API (validation, structured errors, SSE, session isolation, artifacts, engine fallback, timings), the eval runner and readiness. Tests use a scripted fake LLM and a deterministic hashing embedder, so they need no Ollama or API key. CI runs them on every push (`.github/workflows/ci.yml`). UI checks are in the [manual test plan](docs/manual-test-plan.md).
+
+## Measuring quality (eval)
+
+A fixed question set (`backend/app/evals/questions.yaml`) checks the two things that matter most: does retrieval find the right episode, and does the assistant refuse questions the podcast never covered. Expected episodes were verified against the transcript files.
+
+```bash
+docker compose exec api python -m app.evals.run          # retrieval only, about 10 seconds
+docker compose exec api python -m app.evals.run --llm    # also asks the model; slow on a laptop
+```
+
+It prints a table per question (rank of the expected episode, grounding verdict, best similarity score) and the totals: **hit@6**, **off-topic refusal rate**, and with `--llm` the **citation rate** and answer latency. If answerable questions show `none` or off-topic ones are not refused, set `RETRIEVAL_MIN_VECTOR_SCORE` between the two groups' similarity scores.
 
 ## Development without Docker
 
