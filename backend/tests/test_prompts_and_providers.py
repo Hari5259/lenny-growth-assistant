@@ -123,3 +123,35 @@ def test_append_sources_section_lists_excerpts_with_links():
 def test_append_sources_section_noop_without_sources():
     from app.agent.prompts import append_sources_section
     assert append_sources_section("# Essay", []) == "# Essay"
+
+
+async def test_warm_up_loads_chat_and_embedding_models(monkeypatch):
+    from app.llm import clients
+
+    calls = []
+
+    def handler(request):
+        calls.append((request.url.path, request.read().decode()))
+        return httpx.Response(200, json={})
+
+    real_client = httpx.AsyncClient
+    monkeypatch.setattr(clients.httpx, "AsyncClient",
+                        lambda **kw: real_client(transport=httpx.MockTransport(handler), **kw))
+    result = await clients.warm_up_ollama(make_settings(ollama_keep_alive="45m"))
+    assert [c[0] for c in calls] == ["/api/generate", "/api/embed"]
+    assert all('"keep_alive":"45m"' in c[1].replace(" ", "") for c in calls)
+    assert result["chat"]["ok"] and result["embed"]["ok"]
+
+
+async def test_warm_up_never_raises_when_ollama_is_down(monkeypatch):
+    from app.llm import clients
+
+    def handler(request):
+        raise httpx.ConnectError("refused")
+
+    real_client = httpx.AsyncClient
+    monkeypatch.setattr(clients.httpx, "AsyncClient",
+                        lambda **kw: real_client(transport=httpx.MockTransport(handler), **kw))
+    result = await clients.warm_up_ollama(make_settings())
+    assert result == {"chat": {"ok": False, "ms": result["chat"]["ms"]},
+                      "embed": {"ok": False, "ms": result["embed"]["ms"]}}
