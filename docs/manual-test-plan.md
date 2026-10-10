@@ -22,3 +22,8 @@ Run on a fresh clone with Ollama running (`qwen2.5:3b`, `nomic-embed-text`). Tak
 | M16 | Dark mode | Switch OS to dark | All surfaces readable; chips and focus still visible |
 | M17 | Delete | Hover a chat in the rail, click ✕, confirm | Chat and its artifacts disappear; if it was open, a new chat starts |
 | M18 | Observability | `docker compose logs api \| grep chat.turn_done`; open `/api/metrics` | JSON events with request_id, route, provider, engine, latency, cited; metrics show citation_rate |
+| M19 | Timing | Ask any question twice | Each answer shows "N.Ns total" and "first word N.Ns"; the second answer's first word is much faster (model already loaded) |
+| M20 | Copy answer | Click "Copy answer" under an answer, paste into Notepad | The answer text is pasted; button briefly says "Copied" |
+| M21 | Essay sources | Write an essay in Essay mode | Either inline `[S#]` chips, or a "Sources" section at the end plus a yellow notice that the model did not cite inline |
+| M22 | Eval | `docker compose exec api python -m app.evals.run` | Prints a table per question, hit@6 and off-topic refusal; no errors |
+| M23 | Windows scripts | `powershell -ExecutionPolicy Bypass -File scripts\preflight.ps1`, then `scripts\status.ps1` with the app running | All checks OK; status shows Database, Knowledge base and ollama as OK |
