@@ -131,6 +131,8 @@ query ─┬─ embed ─▶ pgvector cosine (HNSW) top 24 ─┐
 - **Why RRF:** no score calibration between cosine and `ts_rank`; robust and parameter-light.
 - **Diversity:** at most 2 chunks per episode, so answers reflect several guests.
 - **Gate:** `none` → the canned "not covered" reply, with no LLM call (saves cost and removes the main hallucination path). `weak` → the prompt tells the model to state gaps.
+- **Verdict rules:** `strong` if the best cosine ≥ threshold + 0.1; `weak` if ≥ threshold; keyword hits can only lift a *borderline* match (within 0.05 below the threshold) to `weak`. Before this rule, the eval showed common words ("point", "team") making off-topic questions look grounded.
+- **Excerpt budget:** 6 excerpts for cloud models, 4 for local ones (`RETRIEVAL_TOP_K_LOCAL`), since a small model on a laptop GPU spends most of its time reading the prompt.
 - **Follow-ups:** short or referential messages ("why?", "what about B2B?") and essay/artifact requests are expanded with the previous user question before retrieval.
 - **Degradation:** if embeddings are down, keyword-only mode with a notice.
 
@@ -140,6 +142,7 @@ query ─┬─ embed ─▶ pgvector cosine (HNSW) top 24 ─┐
 2. The route picks a skill: `skills/<name>/SKILL.md` with frontmatter (`route`, `max_tokens`) and instructions. Skills are files a content owner can edit and review in Git.
 3. The prompt is the skill instructions (system) plus `<sources>` with `[S#]` ids plus capped history plus the user request.
 4. Post-processing: extract `<artifact type title>…</artifact>`, tolerating fenced blocks or untagged essays from small models; strip invalid citations; compute `cited`.
+5. Citation safety net: if a Markdown artifact has no inline `[S#]`, a **Sources** section listing the excerpts it was generated from is appended, a notice is shown, and the message stays `cited: false` so the metric is not inflated. Added after the first real essay from `qwen2.5:3b` came back without citations.
 
 **Why deterministic routing instead of LLM tool-choice:** 3B models choose tools unreliably, and a wrong route ("asked for an essay, got three lines") is the most visible failure. Rules are instant, testable (`test_router.py`) and overridable from the UI.
 
@@ -160,6 +163,7 @@ ProviderRegistry.resolve ── available? ──no──▶ LLM_FALLBACK_PROVID
 - **DirectEngine:** streams `/api/chat` (Ollama, with explicit `num_ctx`) or `/v1/messages` (Anthropic).
 - **Timeouts:** 90 s to first token, `LLM_TIMEOUT_S` total. Timeouts do not trigger engine fallback (the model is slow, not broken); they return `PROVIDER_TIMEOUT`.
 - Availability is checked live (`/api/tags` for the model, presence of the key) and cached 10 s.
+- **Warm-up and keep-alive:** on startup the API loads the chat and embedding models in the background (`OLLAMA_WARMUP`), and requests ask Ollama to keep them loaded for `OLLAMA_KEEP_ALIVE` (30 min). The first real question on the reference laptop took 108.7 s, mostly model loading while ingestion was also using the GPU.
 
 ## 9. Security
 
@@ -190,5 +194,6 @@ ProviderRegistry.resolve ── available? ──no──▶ LLM_FALLBACK_PROVID
 ## 10. Observability
 
 - **JSON logs** (one event per line) carrying `request_id` (also returned as `X-Request-ID`) and `session_id`. Key events: `http.request`, `retrieval.done` / `retrieval.degraded_keyword_only`, `llm.provider_fallback`, `agent.engine_fallback`, `agent.sdk_result` (turns, cost), `chat.turn_done` / `chat.turn_failed`, `artifact.created` (with sanitizer removals) / `artifact.missing`, `db.unavailable`, `ingest.progress` / `ingest.finished`.
-- **Per-message meta** in the DB makes any past answer explainable: which sources, which engine, how long, and whether it cited.
+- **Per-message meta** in the DB makes any past answer explainable: which sources, which engine, how long, and whether it cited. `meta.timings` splits the time into `retrieval_ms`, `first_token_ms` (model start-up and prompt reading) and `generation_ms`; the UI shows total time and time to first word.
+- **Eval runner** (`python -m app.evals.run`) measures hit@k, off-topic refusal and, with `--llm`, citation rate and latency against the running API.
 - **`/health/ready`** and **`/api/metrics`** for dashboards; **`/api/search`** for debugging retrieval without the LLM.
