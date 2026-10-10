@@ -30,6 +30,9 @@ from app.main import create_app
 
 FIXTURES = Path(__file__).parent / "fixtures" / "transcripts"
 TEST_DB = os.getenv("TEST_DATABASE_URL", "postgresql://lenny:lenny@localhost:5432/lenny_test")
+# The fixtures DROP all tables. Refuse anything that does not look like a test database.
+if not TEST_DB.rsplit("/", 1)[-1].split("?")[0].endswith("_test"):
+    raise RuntimeError(f"TEST_DATABASE_URL must point to a database whose name ends in '_test', got {TEST_DB!r}")
 
 
 def _db_available() -> bool:

@@ -16,8 +16,10 @@ ingest:      ## index new or changed transcripts
 reingest:    ## re-embed every transcript (after changing EMBED_MODEL)
 	docker compose run --rm ingest python -m app.ingest --force
 
-test:        ## run the test suite inside the api container
-	docker compose run --rm -e TEST_DATABASE_URL=postgresql://lenny:lenny@db:5432/lenny api sh -c "pip install -q -r requirements-dev.txt && pytest -q"
+test:        ## run the test suite inside the api container (uses a separate lenny_test database)
+	docker compose up -d db
+	-docker compose exec db createdb -U lenny lenny_test
+	docker compose run --rm -e TEST_DATABASE_URL=postgresql://lenny:lenny@db:5432/lenny_test api sh -c "pip install --user -q -r requirements-dev.txt && python -m pytest -q"
 
 eval:        ## retrieval eval: hit@k and off-topic refusal (no LLM, ~10s)
 	docker compose exec api python -m app.evals.run

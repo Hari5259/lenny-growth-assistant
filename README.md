@@ -116,10 +116,13 @@ See [.env.example](.env.example). Every variable has a safe default; none are re
 
 ## Running tests
 
+Tests drop and recreate their tables, so they always use a **separate `lenny_test` database**. Never point `TEST_DATABASE_URL` at the main `lenny` database: it would delete your indexed episodes and chats.
+
 ```bash
 docker compose up -d db
-docker compose run --rm api sh -c "pip install -q -r requirements-dev.txt && \
-  TEST_DATABASE_URL=postgresql://lenny:lenny@db:5432/lenny pytest -v"
+docker compose exec db createdb -U lenny lenny_test     # once; "already exists" is fine
+docker compose run --rm -e TEST_DATABASE_URL=postgresql://lenny:lenny@db:5432/lenny_test api \
+  sh -c "pip install --user -q -r requirements-dev.txt && python -m pytest -v"
 ```
 
 Or locally with Python 3.12:
