@@ -35,14 +35,16 @@ def retrieval_eval(client: httpx.Client, data: dict, k: int) -> dict:
         slugs = [h["episode_slug"] for h in r["hits"]]
         rank = next((i + 1 for i, s in enumerate(slugs) if any(s.startswith(e) for e in item["expect"])), None)
         hits += rank is not None
+        score = r.get("top_vector_score")
         rows.append({"q": item["q"], "rank": rank, "grounding": r["grounding"], "mode": r["mode"],
-                     "top": slugs[:3], "ms": r["latency_ms"]})
+                     "top": slugs[:3], "ms": r["latency_ms"], "score": score})
     refusals, off_rows = 0, []
     for q in data["off_topic"]:
         r = client.get("/api/search", params={"q": q, "k": k}).json()
         refused = r["grounding"] == "none"
         refusals += refused
-        off_rows.append({"q": q, "refused": refused, "grounding": r["grounding"]})
+        score = r.get("top_vector_score")
+        off_rows.append({"q": q, "refused": refused, "grounding": r["grounding"], "score": score})
     return {"rows": rows, "off_rows": off_rows,
             "hit_at_k": hits / len(data["answerable"]),
             "refusal_rate": refusals / len(data["off_topic"])}
@@ -73,6 +75,10 @@ def llm_eval(client: httpx.Client, data: dict) -> dict:
             "off_topic_skipped_model": skipped / len(data["off_topic"])}
 
 
+def fmt(score: float | None) -> str:
+    return "-" if score is None else f"{score:.2f}"
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--api", default="http://localhost:8000")
@@ -85,13 +91,16 @@ def main() -> int:
     with httpx.Client(base_url=args.api, timeout=600) as client:
         ret = retrieval_eval(client, data, args.k)
         print(f"\n## Retrieval (top {args.k})\n")
-        print("| Question | Rank of expected episode | Grounding | Top results |")
-        print("|---|---|---|---|")
+        print("| Question | Rank of expected episode | Grounding | Best similarity | Top results |")
+        print("|---|---|---|---|---|")
         for r in ret["rows"]:
-            print(f"| {r['q']} | {r['rank'] or 'miss'} | {r['grounding']} | {', '.join(r['top'])} |")
-        print("\n| Off-topic question | Refused |\n|---|---|")
+            print(f"| {r['q']} | {r['rank'] or 'miss'} | {r['grounding']} | {fmt(r['score'])} | "
+                  f"{', '.join(r['top'])} |")
+        print("\n| Off-topic question | Refused | Best similarity |\n|---|---|---|")
         for r in ret["off_rows"]:
-            print(f"| {r['q']} | {'yes' if r['refused'] else 'NO (' + r['grounding'] + ')'} |")
+            print(f"| {r['q']} | {'yes' if r['refused'] else 'NO (' + r['grounding'] + ')'} | {fmt(r['score'])} |")
+        print("\nTuning: RETRIEVAL_MIN_VECTOR_SCORE should sit between the off-topic and answerable "
+              "similarity scores above.")
         print(f"\nhit@{args.k}: {ret['hit_at_k']:.0%}   off-topic refusal: {ret['refusal_rate']:.0%}")
 
         if args.llm:
