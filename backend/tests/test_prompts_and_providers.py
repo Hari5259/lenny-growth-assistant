@@ -105,3 +105,21 @@ async def test_fallback_to_ollama_when_anthropic_key_missing():
                     llm_fallback_provider="ollama")
     spec, note = await reg.resolve("anthropic")
     assert spec.name == "ollama" and "fell back" in note
+
+
+def test_append_sources_section_lists_excerpts_with_links():
+    from app.agent.prompts import append_sources_section
+    sources = [{"id": "S1", "guest": "Sean Ellis", "episode_title": "PMF survey", "start_ts": "00:12:34",
+                "deep_link": "https://youtu.be/x?t=754s"},
+               {"id": "S2", "guest": None, "speakers": ["Lenny"], "episode_title": "Intro", "start_ts": None,
+                "deep_link": None}]
+    out = append_sources_section("# Essay\nBody.", sources)
+    assert out.startswith("# Essay\nBody.")
+    assert "## Sources" in out
+    assert "- **S1** Sean Ellis: PMF survey ([00:12:34](https://youtu.be/x?t=754s))" in out
+    assert "- **S2** Lenny: Intro" in out
+
+
+def test_append_sources_section_noop_without_sources():
+    from app.agent.prompts import append_sources_section
+    assert append_sources_section("# Essay", []) == "# Essay"
