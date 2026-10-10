@@ -42,6 +42,8 @@ class Settings(BaseSettings):
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "qwen2.5:3b"
     ollama_num_ctx: int = 8192
+    ollama_keep_alive: str = "30m"  # how long Ollama keeps the model in GPU memory after a request
+    ollama_warmup: bool = True  # load the chat + embedding models when the API starts
 
     # --- Anthropic (cloud) ---
     anthropic_api_key: str = ""

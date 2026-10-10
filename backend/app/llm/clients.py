@@ -20,6 +20,7 @@ async def stream_ollama(settings: Settings, spec: ProviderSpec, system: str, mes
         "model": spec.model,
         "messages": [{"role": "system", "content": system}, *messages],
         "stream": True,
+        "keep_alive": settings.ollama_keep_alive,
         "options": {"temperature": settings.llm_temperature, "num_ctx": settings.ollama_num_ctx,
                     "num_predict": max_tokens},
     }
