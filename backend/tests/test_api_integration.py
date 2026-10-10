@@ -187,3 +187,11 @@ def test_local_provider_uses_smaller_top_k(app_factory):
     body = client.post(f"/api/sessions/{sid}/messages", json={"content": PMF_Q}).json()
     assert len(body["sources"]) == 1
     assert engine.requests[0].messages[-1]["content"].count("<source ") == 1
+
+
+def test_answer_records_timing_breakdown(app_factory):
+    client, _ = app_factory()
+    sid = new_session(client)
+    t = client.post(f"/api/sessions/{sid}/messages", json={"content": PMF_Q}).json()["message"]["meta"]["timings"]
+    assert set(t) == {"retrieval_ms", "first_token_ms", "generation_ms"}
+    assert t["first_token_ms"] is not None and t["generation_ms"] >= t["first_token_ms"] >= 0
