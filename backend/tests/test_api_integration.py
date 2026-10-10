@@ -179,3 +179,11 @@ def test_uncited_essay_gets_sources_section(app_factory):
     assert "## Sources" in art and "**S1**" in art and "FIXTURE001" in art
     assert body["message"]["meta"]["cited"] is False
     assert any("did not cite inline" in n for n in body["message"]["meta"]["notices"])
+
+
+def test_local_provider_uses_smaller_top_k(app_factory):
+    client, engine = app_factory(retrieval_top_k_local=1, retrieval_top_k=4)
+    sid = new_session(client)
+    body = client.post(f"/api/sessions/{sid}/messages", json={"content": PMF_Q}).json()
+    assert len(body["sources"]) == 1
+    assert engine.requests[0].messages[-1]["content"].count("<source ") == 1
