@@ -22,7 +22,7 @@ answerable:
   - q: How do you give radically candid feedback to your team?
     expect: [kim-scott]
   - q: How did Duolingo think about retention and engagement?
-    expect: [albert-cheng]
+    expect: [albert-cheng, jackson-shuttleworth]  # Shuttleworth: "Duolingo streaks", Group PM Retention Team
   - q: How do subscription businesses reduce churn?
     expect: [patrick-campbell]
   - q: How do you make good decisions under uncertainty?
