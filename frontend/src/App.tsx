@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ApiError, streamMessage } from "./api";
 import type { AppConfig, Artifact, Message, Mode, ProviderName, Readiness, Session } from "./api";
+import { AboutDialog } from "./components/AboutDialog";
 import { ArtifactViewer } from "./components/ArtifactViewer";
 import { MessageView, type UiMessage } from "./components/MessageView";
 
@@ -64,6 +65,7 @@ export default function App() {
   const lastPrompt = useRef<{ text: string; mode: Mode } | null>(null);
 
   const [indexing, setIndexing] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
   const lastEpisodes = useRef<number | null>(null);
 
   const refreshStatus = useCallback(() => {
@@ -254,6 +256,7 @@ export default function App() {
               ))}
             </>
           )}
+          <button className="about-link" onClick={() => setAboutOpen(true)}>How answers work</button>
           {config?.version && <p className="status-version">Version {config.version}</p>}
         </div>
       </nav>
@@ -339,6 +342,8 @@ export default function App() {
           <p className="composer-hint">Enter to send, Shift+Enter for a new line. {MODES.find((m) => m.id === mode)?.help}.</p>
         </form>
       </main>
+
+      <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} episodes={kb?.episodes} />
 
       {viewerVisible && (
         <ArtifactViewer artifact={openArtifact} artifacts={artifacts} building={openArtifact ? null : building}

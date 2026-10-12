@@ -256,3 +256,11 @@ button { cursor: pointer; }
 .how-step { display: block; font-weight: 600; color: var(--ink); }
 .how-step::before { content: counter(how) ". "; }
 .indexing { font-size: 13.5px; background: var(--hl-soft); border-radius: var(--r-sm); padding: 8px 12px; margin-bottom: 16px; }
+.about-link { border: 0; background: none; padding: 6px 0 0; color: var(--teal); font-size: 12.5px; text-decoration: underline; text-underline-offset: 3px; }
+.about { border: 1px solid var(--line); border-radius: var(--r-md); padding: 0; width: min(560px, calc(100vw - 32px)); max-height: calc(100vh - 64px); background: var(--paper); color: var(--ink); }
+.about::backdrop { background: rgba(15, 22, 34, .45); }
+.about-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+.about-head h2 { margin: 0; font-size: 16px; }
+.about-body { padding: 4px 22px 20px; overflow-y: auto; }
+.about-body h3 { font-size: 14px; margin: 16px 0 4px; }
+.about-body p { margin: 0; font-size: 14.5px; line-height: 1.55; color: var(--ink-2); }
