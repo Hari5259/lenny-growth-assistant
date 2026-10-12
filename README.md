@@ -29,7 +29,7 @@ A grounded AI assistant over **Lenny's Podcast transcripts** (303 episodes) for 
 | Frontend | React + Vite, served by nginx |
 | Run | `docker compose up --build` |
 
-Docs: [PRD](PRD.md) · [Architecture](architecture.md) · [Design](design.md) · [Manual test plan](docs/manual-test-plan.md) · [Demo script](docs/demo-script.md) · [FAQ](docs/FAQ.md) · [Operations](docs/operations.md) · [Agent transcripts](agent-transcripts/)
+Docs: [PRD](PRD.md) · [Architecture](architecture.md) · [Design](design.md) · [Manual test plan](docs/manual-test-plan.md) · [Demo script](docs/demo-script.md) · [FAQ](docs/FAQ.md) · [Operations](docs/operations.md) · [Security](SECURITY.md) · [Agent transcripts](agent-transcripts/)
 
 ---
 
