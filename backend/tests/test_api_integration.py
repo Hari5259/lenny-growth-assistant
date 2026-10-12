@@ -198,3 +198,10 @@ def test_answer_records_timing_breakdown(app_factory):
     t = client.post(f"/api/sessions/{sid}/messages", json={"content": PMF_Q}).json()["message"]["meta"]["timings"]
     assert set(t) == {"retrieval_ms", "first_token_ms", "generation_ms"}
     assert t["first_token_ms"] is not None and t["generation_ms"] >= t["first_token_ms"] >= 0
+
+
+def test_config_reports_app_version(app_factory):
+    from app import __version__
+    client, _ = app_factory()
+    assert client.get("/api/config").json()["version"] == __version__
+    assert client.get("/openapi.json").json()["info"]["version"] == __version__
