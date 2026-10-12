@@ -1,12 +1,31 @@
 # The Lenny Growth Assistant
 
-A grounded AI assistant over **Lenny's Podcast transcripts** for product and growth teams. It answers questions with citations to the guest and the exact moment in the episode, writes **Ship 30 for 30-style essays**, and generates **Markdown or HTML artifacts** that render in a sandboxed viewer beside the chat. It runs fully local on **Ollama**, or on **Claude** in the cloud, switchable without code changes.
+**Ask what Lenny's Podcast guests actually said about building and growing products, and get an answer you can check: every claim links to the guest and the exact minute in the episode.**
+
+![CI](https://github.com/Hari5259/lenny-growth-assistant/actions/workflows/ci.yml/badge.svg)
+![Python](https://img.shields.io/badge/python-3.12-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-Claude%20Agent%20SDK-009688)
+![Postgres](https://img.shields.io/badge/Postgres-16%20%2B%20pgvector-336791)
+![Runs locally](https://img.shields.io/badge/runs%20locally-Ollama-black)
+
+A grounded AI assistant over **Lenny's Podcast transcripts** (303 episodes) for product and growth teams. It answers questions with citations, writes **Ship 30 for 30-style essays**, and generates **Markdown or HTML artifacts** that render in a sandboxed viewer beside the chat. It runs fully local on **Ollama**, or on **Claude** in the cloud, switchable per chat without code changes.
+
+## What it does
+
+| Feature | What you see | Why it matters |
+|---|---|---|
+| **Cited answers** | Numbered sources under each answer: guest, episode, quote, YouTube link at that minute | You can check every claim in seconds |
+| **Honest "not covered"** | Off-topic questions get a clear refusal plus suggested questions, and the AI is never called | No invented frameworks or fake quotes |
+| **Ship 30 essays** | A ~1,250-word essay opens in the side panel, ready to copy or download | Turns research into something shareable |
+| **Artifacts** | Markdown docs or HTML one-pagers, rendered in a locked sandbox | Safe to open AI-generated web pages |
+| **Local or cloud** | Toggle per chat; the model used is shown on every answer | Private by default, better writing when needed |
+| **Measured quality** | `python -m app.evals.run`: hit@6 **80%**, off-topic refusal **100%** on the real index | Numbers, not impressions |
 
 | | |
 |---|---|
 | Backend | FastAPI, Claude Agent SDK, PostgreSQL 16 + pgvector |
 | Models | Ollama (local, default `qwen2.5:3b`) or Anthropic Claude (cloud) |
-| Retrieval | Hybrid: pgvector cosine + Postgres full-text, fused with RRF |
+| Retrieval | Hybrid: pgvector cosine + Postgres full-text, fused with RRF, then a grounding gate |
 | Frontend | React + Vite, served by nginx |
 | Run | `docker compose up --build` |
 
@@ -120,8 +139,11 @@ See [.env.example](.env.example). Every variable has a safe default; none are re
 | `ANTHROPIC_API_KEY` | empty | Enables the cloud provider |
 | `ANTHROPIC_MODEL` | `claude-sonnet-4-5` | Cloud model |
 | `EMBED_MODEL` / `EMBED_DIM` | `nomic-embed-text` / `768` | Embeddings (change both together, then re-ingest with `--force`) |
-| `RETRIEVAL_TOP_K` | `6` | Excerpts per answer |
-| `RETRIEVAL_MIN_VECTOR_SCORE` | `0.50` | Below this, an answer is not considered grounded |
+| `RETRIEVAL_TOP_K` | `6` | Excerpts per answer (cloud) |
+| `RETRIEVAL_TOP_K_LOCAL` | `4` | Excerpts per answer on the local model: shorter prompt, faster answer |
+| `RETRIEVAL_MIN_VECTOR_SCORE` | `0.67` | Below this, an answer is not considered grounded. Calibrated on real `nomic-embed-text` scores |
+| `OLLAMA_KEEP_ALIVE` | `30m` | How long Ollama keeps the model loaded between questions |
+| `OLLAMA_WARMUP` | `true` | Load the models when the API starts, so the first answer is not a cold start |
 | `INGEST_LIMIT` | `0` | Index only the first N episodes (0 = all) |
 | `LLM_TIMEOUT_S` | `180` | Total generation budget |
 
@@ -146,7 +168,7 @@ createdb -h localhost -U lenny lenny_test   # password: lenny
 pytest -v
 ```
 
-89 tests cover chunking, routing, the HTML sanitizer, prompts and citations, grounding rules, provider fallback, model warm-up, hybrid retrieval, persistence, the HTTP API (validation, structured errors, SSE, session isolation, artifacts, engine fallback, timings), the eval runner and readiness. Tests use a scripted fake LLM and a deterministic hashing embedder, so they need no Ollama or API key. CI runs them on every push (`.github/workflows/ci.yml`). UI checks are in the [manual test plan](docs/manual-test-plan.md).
+90 tests cover chunking, routing, the HTML sanitizer, prompts and citations, grounding rules, provider fallback, model warm-up, hybrid retrieval, persistence, the HTTP API (validation, structured errors, SSE, session isolation, artifacts, engine fallback, timings), the eval runner and readiness. Tests use a scripted fake LLM and a deterministic hashing embedder, so they need no Ollama or API key. CI runs them on every push (`.github/workflows/ci.yml`). UI checks are in the [manual test plan](docs/manual-test-plan.md).
 
 ## Measuring quality (eval)
 
