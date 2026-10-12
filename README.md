@@ -50,6 +50,24 @@ Docs: [PRD](PRD.md) · [Architecture](architecture.md) · [Design](design.md) ·
 
 Details in [architecture.md](architecture.md).
 
+### How a question is answered
+
+```mermaid
+flowchart LR
+    Q[Your question] --> R{Router}
+    R -->|question| S[Hybrid search<br/>vector + keyword, RRF]
+    R -->|"write an essay"| S
+    R -->|"make a one-pager"| S
+    S --> G{"Close enough?<br/>score at least 0.67"}
+    G -->|no| N["Says not covered<br/>+ suggested questions<br/>no AI call"]
+    G -->|yes| L[AI writes from the excerpts only<br/>Ollama or Claude]
+    L --> C[Citation check<br/>invalid S# removed]
+    C --> A[Answer with numbered sources]
+    C --> E[Essay or artifact<br/>in the side panel]
+```
+
+The key design choice: **the grounding gate runs before the AI**. If no transcript is close enough, the model is never asked, so it cannot invent an answer.
+
 ---
 
 ## Prerequisites
