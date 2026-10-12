@@ -274,6 +274,11 @@ export default function App() {
             <section className="welcome">
               <h2>Ask what Lenny's guests actually say about building and growing products.</h2>
               <p>Every answer cites the guest and the moment in the episode. If the transcripts don't cover something, the assistant says so instead of guessing.</p>
+              <ol className="how" aria-label="How it works">
+                <li><span className="how-step">Ask</span>a product or growth question in plain words.</li>
+                <li><span className="how-step">Check</span>the numbered sources: guest, episode and the exact minute on YouTube.</li>
+                <li><span className="how-step">Reuse</span>it: turn the answer into an essay or a one-page document you can copy or download.</li>
+              </ol>
               <ul className="starters">
                 {STARTERS.map((s) => (
                   <li key={s.text}>

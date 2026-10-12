@@ -251,3 +251,7 @@ button { cursor: pointer; }
 .msg-assistant.msg-error { border: 0; padding: 0; background: none; }
 .msg-actions { margin-top: 12px; display: flex; gap: 8px; }
 .status-version { margin: 8px 0 0; color: var(--ink-3); font-size: 12px; }
+.how { list-style: none; counter-reset: how; padding: 0; margin: 0 0 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+.how li { counter-increment: how; font-size: 14px; color: var(--ink-2); border-left: 3px solid var(--hl); padding: 2px 0 2px 12px; }
+.how-step { display: block; font-weight: 600; color: var(--ink); }
+.how-step::before { content: counter(how) ". "; }
