@@ -250,3 +250,4 @@ button { cursor: pointer; }
 }
 .msg-assistant.msg-error { border: 0; padding: 0; background: none; }
 .msg-actions { margin-top: 12px; display: flex; gap: 8px; }
+.status-version { margin: 8px 0 0; color: var(--ink-3); font-size: 12px; }

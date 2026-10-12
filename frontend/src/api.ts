@@ -79,6 +79,7 @@ export interface ProviderInfo {
 }
 
 export interface AppConfig {
+  version: string;
   default_provider: ProviderName;
   fallback_provider: string;
   agent_engine: string;

@@ -241,6 +241,7 @@ export default function App() {
               ))}
             </>
           )}
+          {config?.version && <p className="status-version">Version {config.version}</p>}
         </div>
       </nav>
       {drawer && <div className="scrim" onClick={() => setDrawer(false)} aria-hidden="true" />}
