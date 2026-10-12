@@ -63,17 +63,30 @@ export default function App() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const lastPrompt = useRef<{ text: string; mode: Mode } | null>(null);
 
+  const [indexing, setIndexing] = useState(false);
+  const lastEpisodes = useRef<number | null>(null);
+
   const refreshStatus = useCallback(() => {
     api.config().then(setConfig).catch((e: ApiError) => setBootError(e.body?.hint ?? e.message));
-    api.ready().then(setReady).catch(() => setReady(null));
+    api.ready().then((r) => {
+      setReady(r);
+      // The episode count only grows while the ingest job is running.
+      const n = r.checks.knowledge_base.episodes ?? 0;
+      if (lastEpisodes.current !== null) setIndexing(n > lastEpisodes.current);
+      lastEpisodes.current = n;
+    }).catch(() => setReady(null));
   }, []);
 
   useEffect(() => {
     refreshStatus();
     api.listSessions(userId).then(setSessions).catch(() => {});
-    const t = setInterval(refreshStatus, 30000);
-    return () => clearInterval(t);
   }, [userId, refreshStatus]);
+
+  useEffect(() => {
+    // poll quickly while indexing so the count visibly climbs, slowly otherwise
+    const t = setInterval(refreshStatus, indexing || !ready?.checks.knowledge_base.ok ? 5000 : 30000);
+    return () => clearInterval(t);
+  }, [refreshStatus, indexing, ready?.checks.knowledge_base.ok]);
 
   useEffect(() => {
     if (messages.length === 0) { listRef.current?.scrollTo({ top: 0 }); return; }
@@ -270,6 +283,11 @@ export default function App() {
 
         <div className="messages" ref={listRef}>
           {bootError && <div className="error-box" role="alert"><p className="error-title">{bootError}</p></div>}
+          {indexing && kb && (
+            <p className="indexing" role="status">
+              Indexing transcripts: {kb.episodes} episodes so far. You can ask now; answers get better as indexing finishes.
+            </p>
+          )}
           {messages.length === 0 ? (
             <section className="welcome">
               <h2>Ask what Lenny's guests actually say about building and growing products.</h2>
