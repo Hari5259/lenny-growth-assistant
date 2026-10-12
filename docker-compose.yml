@@ -28,6 +28,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
+    restart: unless-stopped  # comes back with Docker Desktop after a reboot, like api and web
 
   ingest:
     build: ./backend
