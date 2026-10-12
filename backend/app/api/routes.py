@@ -11,6 +11,7 @@ from fastapi.responses import StreamingResponse
 from app.api.schemas import (ArtifactOut, ChatResponse, ConfigResponse, CreateSessionRequest,
                              ErrorResponse, SearchResponse, SendMessageRequest,
                              SessionDetail, SessionOut, UpdateSessionRequest)
+from app import __version__
 from app.container import Container
 from app.errors import AppError
 from app.retrieval.search import hit_to_source
@@ -62,6 +63,7 @@ async def ready(request: Request, response: Response) -> dict:
 async def get_config(request: Request) -> ConfigResponse:
     ct = c(request)
     return ConfigResponse(
+        version=__version__,
         default_provider=ct.settings.llm_provider,
         fallback_provider=ct.settings.llm_fallback_provider,
         agent_engine=ct.settings.agent_engine,

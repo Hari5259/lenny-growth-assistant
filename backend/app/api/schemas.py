@@ -119,6 +119,7 @@ class ProviderOut(BaseModel):
 
 
 class ConfigResponse(BaseModel):
+    version: str
     default_provider: str
     fallback_provider: str
     agent_engine: str

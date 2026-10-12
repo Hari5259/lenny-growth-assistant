@@ -13,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from app import __version__
 from app.api.routes import router
 from app.config import Settings, get_settings
 from app.container import Container, build_container
@@ -50,7 +51,7 @@ def create_app(settings: Settings | None = None, container: Container | None = N
             warmup.cancel()
         await ct.db.close()
 
-    app = FastAPI(title="Lenny Growth Assistant API", version="1.0.0", lifespan=lifespan,
+    app = FastAPI(title="Lenny Growth Assistant API", version=__version__, lifespan=lifespan,
                   description="Grounded assistant over Lenny's Podcast transcripts.")
     app.add_middleware(CORSMiddleware, allow_origins=settings.cors_origin_list, allow_credentials=False,
                        allow_methods=["*"], allow_headers=["*"], expose_headers=["X-Request-ID"])
