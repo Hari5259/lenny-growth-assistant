@@ -218,6 +218,17 @@ export default function App() {
 
   const stop = () => abortRef.current?.abort();
 
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        if (!busy) newChat();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+
   const kb = ready?.checks.knowledge_base;
   const viewerVisible = viewerOpen && (openArtifact || building);
 
@@ -233,7 +244,9 @@ export default function App() {
             <p className="brand-sub">Answers from Lenny's Podcast</p>
           </div>
         </div>
-        <button className="new-chat" onClick={newChat}>New chat</button>
+        <button className="new-chat" onClick={newChat} title="Ctrl+K">
+          New chat <kbd className="kbd">Ctrl K</kbd>
+        </button>
         <ul className="session-list">
           {sessions.length === 0 && <li className="empty-note">Your chats appear here.</li>}
           {sessions.map((s) => (

@@ -268,3 +268,5 @@ button { cursor: pointer; }
 .suggestions { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
 .suggestion { border: 1px solid var(--line); background: var(--fog); border-radius: var(--r-sm); padding: 6px 12px; font: 14px var(--sans); text-align: left; }
 .suggestion:hover { border-color: var(--ink-3); }
+.new-chat { display: flex; justify-content: space-between; align-items: center; }
+.kbd { font: 11px var(--sans); opacity: .65; border: 1px solid currentColor; border-radius: 4px; padding: 1px 5px; }
