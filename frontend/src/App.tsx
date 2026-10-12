@@ -315,7 +315,8 @@ export default function App() {
             messages.map((m, i) => (
               <MessageView key={m.id} m={m}
                 onOpenArtifact={(id) => { const a = artifacts.find((x) => x.id === id); if (a) { setOpenArtifact(a); setViewerOpen(true); } }}
-                onRetry={i === messages.length - 1 && lastPrompt.current ? () => send(lastPrompt.current!.text, lastPrompt.current!.mode) : undefined} />
+                onRetry={i === messages.length - 1 && lastPrompt.current ? () => send(lastPrompt.current!.text, lastPrompt.current!.mode) : undefined}
+                onAsk={busy ? undefined : (q) => send(q, "qa")} />
             ))
           )}
         </div>

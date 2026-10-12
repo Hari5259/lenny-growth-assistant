@@ -30,10 +30,17 @@ function stripArtifact(text: string): { visible: string; building: boolean } {
   return { visible: text.slice(0, i).trim(), building: !/<\/artifact>/i.test(text) };
 }
 
-export function MessageView({ m, onOpenArtifact, onRetry }: {
+const SUGGESTIONS = [
+  "How do the best companies measure product-market fit?",
+  "What do guests say about pricing a B2B SaaS product?",
+  "How should a PM prioritise a roadmap?",
+];
+
+export function MessageView({ m, onOpenArtifact, onRetry, onAsk }: {
   m: UiMessage;
   onOpenArtifact: (id: string) => void;
   onRetry?: () => void;
+  onAsk?: (text: string) => void;
 }) {
   const [openSources, setOpenSources] = useState(false);
   const [focused, setFocused] = useState<string | null>(null);
@@ -79,10 +86,22 @@ export function MessageView({ m, onOpenArtifact, onRetry }: {
           </div>
         </div>
       ) : (
+        m.route === "no_answer" && !m.streaming && onAsk ? (
+          <div className="prose answer">
+            <p>{m.content.split("\n\n")[0]}</p>
+            <p className="suggest-label">Try one of these instead:</p>
+            <div className="suggestions">
+              {SUGGESTIONS.map((q) => (
+                <button key={q} className="suggestion" onClick={() => onAsk(q)}>{q}</button>
+              ))}
+            </div>
+          </div>
+        ) : (
         <div className="prose answer" aria-live={m.streaming ? "polite" : undefined} aria-busy={m.streaming}>
           {visible ? <Markdown text={visible} sources={m.sources} onCite={cite} /> : m.streaming && !building ? <span className="typing" aria-label="Thinking"><i /><i /><i /></span> : null}
           {building && <p className="building-inline">Writing the artifact in the viewer.</p>}
         </div>
+        )
       )}
 
       {m.artifactId && (

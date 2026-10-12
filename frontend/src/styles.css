@@ -264,3 +264,7 @@ button { cursor: pointer; }
 .about-body { padding: 4px 22px 20px; overflow-y: auto; }
 .about-body h3 { font-size: 14px; margin: 16px 0 4px; }
 .about-body p { margin: 0; font-size: 14.5px; line-height: 1.55; color: var(--ink-2); }
+.suggest-label { font-family: var(--sans); font-size: 13px; color: var(--ink-3); margin-bottom: 6px !important; }
+.suggestions { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.suggestion { border: 1px solid var(--line); background: var(--fog); border-radius: var(--r-sm); padding: 6px 12px; font: 14px var(--sans); text-align: left; }
+.suggestion:hover { border-color: var(--ink-3); }
