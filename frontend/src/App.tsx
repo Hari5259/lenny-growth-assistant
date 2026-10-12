@@ -91,6 +91,12 @@ export default function App() {
   }, [refreshStatus, indexing, ready?.checks.knowledge_base.ok]);
 
   useEffect(() => {
+    document.title = current && current.title !== "New chat"
+      ? `${current.title} · Lenny Growth Assistant`
+      : "Lenny Growth Assistant";
+  }, [current]);
+
+  useEffect(() => {
     if (messages.length === 0) { listRef.current?.scrollTo({ top: 0 }); return; }
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: busy ? "auto" : "smooth" });
   }, [messages, busy]);
